@@ -11,12 +11,8 @@ from slack_sdk.errors import SlackApiError
 tz_jkt = pendulum.timezone("Asia/Jakarta")
 tz_sgp = pendulum.timezone("Asia/Singapore")
 
-def notify_base(context, title, color, channel_id="CEB1P0SNT"):  # CEB1P0SNT: #alert_datawarehouse
-    cred = json.loads(
-        get_credentials_from_secret_manager(
-            "airflow__connections__airflow_alerts__slack_data_app_alert"
-        )
-    )
+def notify_base(context, title, color, channel_id="dummy_id"):  
+    cred = json.loads(get_credentials_from_secret_manager("SECRET_NAME"))
     slack_token = cred.get("bot_api_token")
     client = WebClient(token=slack_token)
 
@@ -85,16 +81,12 @@ def notify_base(context, title, color, channel_id="CEB1P0SNT"):  # CEB1P0SNT: #a
 
 
 def threaded_message(context, original_ts):
-    cred = json.loads(
-        get_credentials_from_secret_manager(
-            "airflow__connections__airflow_alerts__slack_data_app_alert"
-        )
-    )
+    cred = json.loads(get_credentials_from_secret_manager("SECRET_NAME"))
     slack_token = cred.get("bot_api_token")
     client = WebClient(token=slack_token)
 
     dag = context["dag"]
-    channel_id = override_slack_channel_id("CEB1P0SNT")  # alert_datawarehouse
+    channel_id = override_slack_channel_id("dummy_id")  
     airflow_environment = os.getenv("AIRFLOW_ENVIRONMENT")
     test_environment = airflow_environment in ["local", "testing", "development"]
     if test_environment:
@@ -121,50 +113,6 @@ def threaded_message(context, original_ts):
     except SlackApiError as e:
         print(f"Error sending follow-up message: {e.response['error']}")
 
-
-def notify_extended(title, response, channel_id="C0649Q29HHB"):  # C0649Q29HHB: #alert-regulator
-    cred = json.loads(
-        get_credentials_from_secret_manager(
-            "airflow__connections__airflow_alerts__slack_data_app_alert"
-        )
-    )
-    slack_token = cred.get("bot_api_token")
-    client = WebClient(token=slack_token)
-
-    channel_id = override_slack_channel_id(channel_id)
-    username = "Airflow"
-
-    response_text = f"```{response}```"
-
-    header_block = {
-        "type": "header",
-        "text": {
-            "type": "plain_text",
-            "text": title,
-        },
-    }
-    divider_block = {"type": "divider"}
-    response_block = {"type": "section", "text": {"type": "mrkdwn", "text": response_text}}
-
-    blocks = [
-        header_block,
-        divider_block,
-        response_block,
-    ]
-
-    attachments = [{"color": "#ffffff", "blocks": blocks}]
-    try:
-        alert = client.chat_postMessage(
-            text="",
-            attachments=attachments,
-            channel=channel_id,
-            username=username,
-        )
-        print(f"Message sent successfully.")
-    except SlackApiError as e:
-        # You will get a SlackApiError if "ok" is False
-        print(f"Error sending first message: {e.response['error']}")
-        raise
 
 
 def notify_fail(context):
