@@ -3,6 +3,7 @@ This repository keeps the DAG I worked on while I am in Fazz. The file paths are
 
 ### On Failure Callback 
 [Airflow Alerts](https://github.com/lulukuo530/airflow-dag/blob/main/plugins/common/airflow_alerts.py)
+
 ![slack threaded message](https://github.com/lulukuo530/airflow-dag/blob/main/images/slack_threaded_message_example.png?raw=true)
 
 
